@@ -1,5 +1,7 @@
 const appError = require("../utils/AppError");
 
+const sqliteConnection = require("../database/sqlite");
+
 class UsersControllers {
   /**
    * ---- CONTROLLER PODE TER APENAS 5 MÉTODOS:
@@ -13,13 +15,21 @@ class UsersControllers {
    * ----
    */
 
-  create(request, response) {
-    const { name, email } = request.body;
+  async create(request, response) {
+    const { name, email, password } = request.body;
+    const database = await sqliteConnection();
 
-    if (!name) {
-      throw new appError("nome é obrigatório");
+    /* REALIZANDO CHECAGEM DE DADOS*/
+    const checkUserExist = await database.get(
+      "SELECT * FROM users WHERE email = (?)",
+      [email]
+    );
+
+    if (checkUserExist) {
+      throw new appError("Email ja cadastrado");
     }
-    response.status(200).json({ name, email });
+
+    return response.status(201).json();
   }
 }
 
