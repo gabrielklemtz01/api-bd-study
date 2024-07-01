@@ -1,3 +1,6 @@
+/* EXPORTANDO METODO DE CRIPTOGRAFIA DA SENHA NO BD*/
+const { hash } = require("bcryptjs");
+
 const appError = require("../utils/AppError");
 
 const sqliteConnection = require("../database/sqlite");
@@ -28,6 +31,14 @@ class UsersControllers {
     if (checkUserExist) {
       throw new appError("Email ja cadastrado");
     }
+
+    /* CRIPTOGRAFANDO A SENHA*/
+    const hashedPassword = await hash(password, 8);
+
+    await database.run(
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      [name, email, hashedPassword]
+    );
 
     return response.status(201).json();
   }
